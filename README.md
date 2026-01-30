@@ -1,88 +1,64 @@
-# 🔥 Burnout Prediction - Machine Learning Project
+# 🔥 Employee Burnout Prediction
 
 ## 📋 Description
 
-Ce projet utilise le Machine Learning pour prédire le risque de burnout chez les employés en milieu professionnel. L'objectif est d'identifier les employés à risque afin de mettre en place des mesures préventives.
+Projet de Machine Learning pour prédire le risque de burnout chez les employés à partir de données synthétiques. Ce modèle utilise la régression logistique pour classifier les employés selon leur risque de burnout.
 
 ## 📊 Dataset
 
-- **Source** : `mental_health_workplace_survey.csv`
-- **Taille** : 3000 employés
-- **Cible** : `BurnoutRisk` (0 = Pas de risque, 1 = Risque de burnout)
-- **Distribution** : 67.3% classe 0, 32.7% classe 1
+- **Source** : [Kaggle - Synthetic HR Burnout Dataset](https://www.kaggle.com/datasets/ankam6010/synthetic-hr-burnout-dataset)
+- **Fichier** : `Synthetic_employee_burnout.csv`
+- **Variable cible** : `Burnout` (0 = Pas de burnout, 1 = Burnout)
 
-### Features principales
+### Features
 
-| Catégorie | Features |
-|-----------|----------|
-| **Démographique** | Age, Gender, Country |
-| **Travail** | JobRole, Department, YearsAtCompany, WorkHoursPerWeek |
-| **Bien-être** | StressLevel, SleepHours, WorkLifeBalanceScore |
-| **Support** | ManagerSupportScore, HasMentalHealthSupport, HasTherapyAccess |
-| **Autres** | SalaryRange, RemoteWork, CommuteTime |
+| Feature | Description |
+|---------|-------------|
+| Name | Nom de l'employé (supprimé) |
+| Gender | Genre (encodé via one-hot) |
+| JobRole | Rôle professionnel (encodé via one-hot) |
 
-## 🛠️ Technologies utilisées
+## 🛠️ Technologies
 
 - **Python 3.12**
 - **Pandas** - Manipulation des données
-- **Scikit-learn** - Modèles ML
-- **NumPy** - Calculs numériques
+- **Scikit-learn** - StandardScaler, LogisticRegression, Metrics
 
-## 🚀 Modèle
+## � Pipeline
 
-```python
-RandomForestClassifier(
-    n_estimators=300,
-    class_weight='balanced',
-    random_state=42
-)
-```
+1. Chargement des données (`pd.read_csv()`)
+2. Prétraitement (suppression "Name", One-hot encoding)
+3. Normalisation (`StandardScaler`)
+4. Split 80/20 stratifié
+5. Modélisation (`LogisticRegression(class_weight="balanced")`)
+6. Prédiction avec seuil 0.80
 
 ## 📈 Résultats
 
 | Métrique | Score |
 |----------|-------|
-| Accuracy | 67.5% |
-| Recall (Burnout) | 29% |
-| Precision (Burnout) | 30% |
+| **Accuracy** | 96.25% |
+| **Recall (Burnout)** | 88.46% |
+| **Precision (Burnout)** | 65.71% |
 
-### ⚠️ Limitations
-
-L'analyse exploratoire a révélé que les features ont une très faible corrélation avec la variable cible (max 2.7%). Cela suggère que :
-- Le dataset est potentiellement synthétique
-- Les features ne capturent pas les vrais facteurs de burnout
-- Un dataset réel serait nécessaire pour de meilleures prédictions
-
-## 📁 Structure du projet
+## 📁 Structure
 
 ```
-├── Burnout_prediction.ipynb    # Notebook principal
-├── mental_health_workplace_survey.csv  # Dataset
-└── README.md                   # Documentation
+Burnout_Projet/
+├── Burnout_prediction.ipynb
+├── Synthetic_employee_burnout.csv
+└── README.md
 ```
 
 ## 🔧 Installation
 
 ```bash
-pip install pandas scikit-learn numpy matplotlib seaborn
-```
-
-## ▶️ Utilisation
-
-```python
-# Charger les données
-data = pd.read_csv("mental_health_workplace_survey.csv")
-
-# Prétraitement et entraînement
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
-model.fit(X_train, y_train)
-
-# Prédiction
-y_pred = model.predict(X_test)
+pip install pandas scikit-learn numpy
 ```
 
 ## 👤 Auteur
 
 **Samah AZIZ**  
-Étudiante en Licence Ingénierie Informatique  
+Étudiante en Licence Ingénierie Informatique - FST Mohammedia  
+📧 iamsamahaziz@gmail.com  
 🔗 [GitHub](https://github.com/iamsamahaziz) | [LinkedIn](https://linkedin.com/in/samah-az)
