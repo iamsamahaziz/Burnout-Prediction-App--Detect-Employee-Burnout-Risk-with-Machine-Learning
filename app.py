@@ -88,4 +88,4 @@ def predict():
     return render_template("index.html", result=result, probability=round(probability, 1))
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run()
