@@ -1,4 +1,4 @@
-# 🔥 Employee Burnout Prediction - Web App
+# Burnout Prediction App -- Detect Employee Burnout Risk with Machine Learning
 
 <p align="center">
   <img src="https://img.shields.io/badge/Python-3.12-3776AB?style=for-the-badge&logo=python&logoColor=white" />
@@ -94,9 +94,9 @@ Export model (.pkl) + scaler (.pkl)
 
 | Metric | Score |
 |---|---|
-| **Accuracy** | 96.25% |
+| **Accuracy** | 95.50% |
 | **Recall (Burnout)** | 88.46% |
-| **Precision (Burnout)** | 65.71% |
+| **Precision (Burnout)** | 60.53% |
 
 ---
 
