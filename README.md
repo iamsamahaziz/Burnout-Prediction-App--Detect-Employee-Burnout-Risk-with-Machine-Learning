@@ -176,7 +176,7 @@ http://127.0.0.1:5000
 ## 👤 Author
 
 **Samah AZIZ**  
-Computer Science Engineering Student — FST Mohammedia
+Computer Science Engineering Student - FST Mohammedia
 
 [![GitHub](https://img.shields.io/badge/GitHub-iamsamahaziz-181717?style=flat-square&logo=github)](https://github.com/iamsamahaziz)
 [![LinkedIn](https://img.shields.io/badge/LinkedIn-samah--az-0A66C2?style=flat-square&logo=linkedin)](https://linkedin.com/in/samah-az)
