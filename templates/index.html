@@ -1,59 +1,406 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Burnout Prediction</title>
+    <meta name="description"
+        content="AI-powered Employee Burnout Risk Prediction Tool. Analyze work conditions to detect and prevent professional burnout.">
+    <meta property="og:title" content="Burnout Prediction - AI Risk Assessment">
+    <meta property="og:description" content="Predict and prevent employee burnout with machine learning analysis.">
+    <meta property="og:type" content="website">
+    <title>Burnout Prediction - AI Risk Assessment</title>
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔥</text></svg>">
+    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+    <meta name="theme-color" content="#0a0e1a">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
 </head>
+
 <body>
-    <h1>🔥 Burnout Prediction</h1>
-    
-    <form action="/predict" method="POST">
-        
-        <label for="age">Age:</label>
-        <input type="number" name="age" id="age" required><br><br>
-        
-        <label for="experience">Experience (années):</label>
-        <input type="number" name="experience" id="experience" required><br><br>
-        
-        <label>Gender:</label>
-        <input type="radio" name="gender" value="Male" id="male" required> 
-        <label for="male">Male</label>
-        <input type="radio" name="gender" value="Female" id="female"> 
-        <label for="female">Female</label><br><br>
-        
-        <label for="work_hours">Heures/semaine:</label>
-        <input type="number" name="work_hours" id="work_hours" required><br><br>
-        
-        <label for="remote_ratio">Télétravail (%):</label>
-        <input type="number" name="remote_ratio" id="remote_ratio" min="0" max="100" required><br><br>
-        
-        <label for="satisfaction">Satisfaction (1-5):</label>
-        <input type="number" name="satisfaction" id="satisfaction" step="0.1" min="1" max="5" required><br><br>
-        
-        <label for="stress">Stress (1-10):</label>
-        <input type="number" name="stress" id="stress" min="1" max="10" required><br><br>
-        
-        <label for="job_role">Job:</label>
-        <select name="job_role" id="job_role" required>
-            <option value="">-- Sélectionner un rôle --</option>
-            <option value="Analyst">Analyst</option>
-            <option value="Engineer">Engineer</option>
-            <option value="HR">HR</option>
-            <option value="Manager">Manager</option>
-            <option value="Sales">Sales</option>
-        </select><br><br>
-        
-        <button type="submit">Prédire</button>
-    </form>
+
+    <!-- Background Effect -->
+    <div class="bg-particles">
+        <div class="orb"></div>
+        <div class="orb"></div>
+        <div class="orb"></div>
+    </div>
+
+    <div class="app-container">
+
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-top">
+                <span class="logo-icon">🔥</span>
+                <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">
+                    <span class="theme-icon" id="theme-icon">☀️</span>
+                </button>
+            </div>
+            <h1>Burnout Prediction</h1>
+            <p class="subtitle">AI-Powered Employee Risk Assessment</p>
+        </header>
+
+        <!-- Form Card -->
+        <div class="glass-card">
+            <form action="/predict" method="POST" id="burnout-form">
+
+                <!-- Personal Info -->
+                <div class="form-section-title">Personal Information</div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="age">Age</label>
+                        <input type="number" name="age" id="age" placeholder="e.g. 30" min="18" max="70" required {% if
+                            request.form.get('age') %}value="{{ request.form.get('age') }}" {% endif %}>
+                    </div>
+                    <div class="form-group">
+                        <label for="experience">Experience (years)</label>
+                        <input type="number" name="experience" id="experience" placeholder="e.g. 5" min="0" max="50"
+                            required {% if request.form.get('experience') %}value="{{ request.form.get('experience') }}"
+                            {% endif %}>
+                    </div>
+                    <div class="form-group full-width">
+                        <label>Gender</label>
+                        <div class="gender-options">
+                            <div class="gender-option">
+                                <input type="radio" name="gender" value="Male" id="male" required {% if
+                                    request.form.get('gender')=='Male' %}checked{% endif %}>
+                                <label for="male" class="gender-label">👨 Male</label>
+                            </div>
+                            <div class="gender-option">
+                                <input type="radio" name="gender" value="Female" id="female" {% if
+                                    request.form.get('gender')=='Female' %}checked{% endif %}>
+                                <label for="female" class="gender-label">👩 Female</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Work Conditions -->
+                <div class="form-section-title" style="margin-top: 32px;">Work Conditions</div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="work_hours">Hours / Week</label>
+                        <input type="number" name="work_hours" id="work_hours" placeholder="e.g. 40" min="10" max="100"
+                            required {% if request.form.get('work_hours') %}value="{{ request.form.get('work_hours') }}"
+                            {% endif %}>
+                    </div>
+                    <div class="form-group">
+                        <label for="remote_ratio">Remote Work (%)</label>
+                        <input type="number" name="remote_ratio" id="remote_ratio" placeholder="e.g. 50" min="0"
+                            max="100" required {% if request.form.get('remote_ratio')
+                            %}value="{{ request.form.get('remote_ratio') }}" {% endif %}>
+                    </div>
+                    <div class="form-group full-width">
+                        <label for="job_role">Job Role</label>
+                        <select name="job_role" id="job_role" required>
+                            <option value="">Select your role</option>
+                            <option value="Analyst" {% if request.form.get('job_role')=='Analyst' %}selected{% endif %}>
+                                📊 Analyst</option>
+                            <option value="Engineer" {% if request.form.get('job_role')=='Engineer' %}selected{% endif
+                                %}>⚙️ Engineer</option>
+                            <option value="HR" {% if request.form.get('job_role')=='HR' %}selected{% endif %}>🤝 HR
+                            </option>
+                            <option value="Manager" {% if request.form.get('job_role')=='Manager' %}selected{% endif %}>
+                                📋 Manager</option>
+                            <option value="Sales" {% if request.form.get('job_role')=='Sales' %}selected{% endif %}>💼
+                                Sales</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Wellbeing -->
+                <div class="form-section-title" style="margin-top: 32px;">Wellbeing Assessment</div>
+
+                <div class="form-group">
+                    <div class="slider-container">
+                        <div class="slider-header">
+                            <label for="stress">Stress Level</label>
+                            <span class="slider-value" id="stress-value">{{ request.form.get('stress', '5') }}</span>
+                        </div>
+                        <input type="range" name="stress" id="stress" min="1" max="10"
+                            value="{{ request.form.get('stress', '5') }}">
+                        <div class="slider-labels">
+                            <span>😌 Relaxed</span>
+                            <span>😰 Very Stressed</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-top: 20px;">
+                    <div class="slider-container">
+                        <div class="slider-header">
+                            <label for="satisfaction">Job Satisfaction</label>
+                            <span class="slider-value" id="satisfaction-value">{{ request.form.get('satisfaction',
+                                '3.0') }}</span>
+                        </div>
+                        <input type="range" name="satisfaction" id="satisfaction" min="1" max="5" step="0.1"
+                            value="{{ request.form.get('satisfaction', '3.0') }}">
+                        <div class="slider-labels">
+                            <span>😞 Unsatisfied</span>
+                            <span>😊 Very Satisfied</span>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-predict" id="btn-predict">
+                    🔍 Analyze Burnout Risk
+                </button>
+            </form>
+        </div>
+
+        <!-- ============ RESULTS ============ -->
+        {% if result %}
+        <div id="result-section">
+
+            <!-- GAUGE + STATUS -->
+            <div class="glass-card result-card {{ result_class }}" id="result-card-main">
+                <div class="gauge-container">
+                    <svg class="gauge-svg" viewBox="0 0 200 200">
+                        <circle class="gauge-bg" cx="100" cy="100" r="85"></circle>
+                        <circle class="gauge-fill" cx="100" cy="100" r="85" stroke-dasharray="534"
+                            stroke-dashoffset="534" data-target="{{ probability }}">
+                        </circle>
+                    </svg>
+                    <div class="gauge-center-text">
+                        <div class="gauge-percentage" id="gauge-number">0</div>
+                        <div class="gauge-label">Risk Score</div>
+                    </div>
+                </div>
+                <div class="result-status">{{ result }}</div>
+                <p class="result-description">{{ result_description }}</p>
+
+                <!-- Action Buttons -->
+                <div class="result-actions">
+                    <button class="btn-action btn-pdf" id="btn-download-pdf" title="Download PDF Report">
+                        📄 Download Report
+                    </button>
+                    <button class="btn-action btn-share" id="btn-share-link" title="Copy shareable link">
+                        🔗 Share
+                    </button>
+                    <button class="btn-action btn-linkedin" id="btn-share-linkedin" title="Share on LinkedIn">
+                        💼 LinkedIn
+                    </button>
+                    <button class="btn-action btn-twitter" id="btn-share-twitter" title="Share on X / Twitter">
+                        🐦 Tweet
+                    </button>
+                </div>
+                <div class="share-toast" id="share-toast">✅ Link copied!</div>
+            </div>
+
+            <!-- DASHBOARD - Factor Breakdown + Radar -->
+            <div class="dashboard-grid">
+                <!-- Risk Factor Bars -->
+                <div class="glass-card dashboard-card">
+                    <h3 class="dashboard-title">📊 Risk Factor Breakdown</h3>
+                    {% for factor in factor_breakdown %}
+                    <div class="factor-row">
+                        <div class="factor-info">
+                            <span class="factor-icon">{{ factor.icon }}</span>
+                            <span class="factor-name">{{ factor.name }}</span>
+                            <span class="factor-val">{{ factor.value }}%</span>
+                        </div>
+                        <div class="factor-bar-bg">
+                            <div class="factor-bar-fill" data-value="{{ factor.value }}" style="width: 0%"></div>
+                        </div>
+                        <p class="factor-tip">{{ factor.tip }}</p>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <!-- Radar Chart -->
+                <div class="glass-card dashboard-card">
+                    <h3 class="dashboard-title">🎯 Risk Profile</h3>
+                    <div class="chart-wrapper">
+                        <canvas id="radarChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Trend Chart (from history) -->
+            <div class="glass-card" style="margin-top: 20px;">
+                <h3 class="dashboard-title">📈 Burnout Score Trend</h3>
+                <div class="chart-wrapper chart-wide">
+                    <canvas id="trendChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Industry Comparison -->
+            {% if industry %}
+            <div class="glass-card industry-card" style="margin-top: 20px;">
+                <h3 class="dashboard-title">📊 Industry Comparison</h3>
+                <p class="industry-subtitle">How you compare to <strong>{{ industry.sample_size|default(0) }}</strong>
+                    {{ industry.role }} professionals</p>
+                <div class="comparison-grid">
+                    <div class="comparison-item">
+                        <div class="comp-label">Your Score</div>
+                        <div class="comp-value comp-you">{{ industry.user_score }}%</div>
+                        <div class="comp-bar">
+                            <div class="comp-bar-fill comp-fill-you" style="width: {{ industry.user_score }}%"></div>
+                        </div>
+                    </div>
+                    <div class="comparison-item">
+                        <div class="comp-label">{{ industry.role }} Average</div>
+                        <div class="comp-value comp-role">{{ industry.role_avg_score }}%</div>
+                        <div class="comp-bar">
+                            <div class="comp-bar-fill comp-fill-role" style="width: {{ industry.role_avg_score }}%">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="comparison-item">
+                        <div class="comp-label">Global Average</div>
+                        <div class="comp-value comp-global">{{ industry.global_avg_score }}%</div>
+                        <div class="comp-bar">
+                            <div class="comp-bar-fill comp-fill-global" style="width: {{ industry.global_avg_score }}%">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="comp-verdict {% if industry.score_better %}verdict-good{% else %}verdict-bad{% endif %}">
+                    {% if industry.score_better %}
+                    ✅ Your burnout risk is <strong>{{ (industry.score_diff * -1)|round(1) }}% lower</strong> than the {{
+                    industry.role }} average
+                    {% else %}
+                    ⚠️ Your burnout risk is <strong>{{ industry.score_diff }}% higher</strong> than the {{ industry.role
+                    }} average
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Recommendations -->
+            {% if recommendations %}
+            <div class="glass-card recommendations" style="margin-top: 20px;">
+                <h3>💡 Personalized Recommendations</h3>
+                <ul class="rec-list">
+                    {% for rec in recommendations %}
+                    <li class="rec-item">
+                        <span class="rec-icon">{{ rec.icon }}</span>
+                        <span>{{ rec.text }}</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+
+            <!-- 30-Day Action Plan -->
+            {% if action_plan %}
+            <div class="glass-card action-plan" style="margin-top: 20px;">
+                <h3>🎯 Your 30-Day Wellness Plan</h3>
+                <p class="plan-subtitle">A progressive plan tailored to your risk profile</p>
+                <div class="plan-timeline">
+                    {% for week in action_plan %}
+                    <div class="plan-week">
+                        <div class="plan-week-header">
+                            <span class="plan-week-icon">{{ week.icon }}</span>
+                            <div>
+                                <span class="plan-week-num">Week {{ week.week }}</span>
+                                <span class="plan-week-title">{{ week.title }}</span>
+                            </div>
+                        </div>
+                        <ul class="plan-tasks">
+                            {% for task in week.tasks %}
+                            <li class="plan-task">
+                                <input type="checkbox" class="plan-checkbox" id="w{{ week.week }}t{{ loop.index }}">
+                                <label for="w{{ week.week }}t{{ loop.index }}">{{ task }}</label>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+        </div>
+        {% endif %}
+
+        <!-- ============ BREATHING EXERCISE ============ -->
+        <div class="glass-card breathing-section" style="margin-top: 24px;">
+            <h3 class="dashboard-title">🌬️ Breathing Exercise</h3>
+            <p class="breathing-subtitle">The 4-7-8 technique - proven to reduce stress and anxiety in minutes</p>
+            <div class="breathing-container">
+                <div class="breathing-circle" id="breathing-circle">
+                    <div class="breathing-inner">
+                        <span class="breathing-text" id="breathing-text">Start</span>
+                        <span class="breathing-timer" id="breathing-timer"></span>
+                    </div>
+                </div>
+                <div class="breathing-controls">
+                    <button class="btn-action btn-breathing" id="btn-breathing" onclick="toggleBreathing()">▶️ Begin
+                        Session</button>
+                    <span class="breathing-cycles" id="breathing-cycles"></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============ MOOD TRACKER ============ -->
+        <div class="glass-card mood-section" style="margin-top: 24px;">
+            <h3 class="dashboard-title">😊 Daily Mood Tracker</h3>
+            <p class="mood-subtitle">Track how you feel every day - patterns reveal insights</p>
+            <div class="mood-selector">
+                <button class="mood-btn" data-mood="1" data-emoji="😫" onclick="selectMood(this)">😫</button>
+                <button class="mood-btn" data-mood="2" data-emoji="😟" onclick="selectMood(this)">😟</button>
+                <button class="mood-btn" data-mood="3" data-emoji="😐" onclick="selectMood(this)">😐</button>
+                <button class="mood-btn" data-mood="4" data-emoji="😊" onclick="selectMood(this)">😊</button>
+                <button class="mood-btn" data-mood="5" data-emoji="🤩" onclick="selectMood(this)">🤩</button>
+            </div>
+            <div class="mood-note-row">
+                <input type="text" class="mood-note-input" id="mood-note"
+                    placeholder="How are you feeling today? (optional)" maxlength="100">
+                <button class="btn-action btn-mood-save" id="btn-mood-save" onclick="saveMood()" disabled>Save</button>
+            </div>
+            <div class="mood-calendar" id="mood-calendar"></div>
+            <div class="mood-streak" id="mood-streak"></div>
+        </div>
+
+        <!-- History -->
+        <div class="history-section glass-card" id="history-section" style="margin-top: 24px; display: none;">
+            <div class="history-header">
+                <h3>📋 Recent Assessments</h3>
+                <button class="btn-clear-history" id="btn-clear-history">Clear</button>
+            </div>
+            <div class="history-list" id="history-list">
+                <p class="history-empty">No assessments yet</p>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="app-footer">
+            <p>Built by <a href="https://github.com/iamsamahaziz" target="_blank">Samah AZIZ</a> · Powered by Machine
+                Learning</p>
+            <p style="margin-top: 4px; font-size: 0.7rem;">Install this app on your phone for quick access 📱</p>
+        </footer>
+
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
 
     {% if result %}
-    <div class="result">
-        <h2>{{ result }}</h2>
-        <p>Probabilité de burnout: {{ probability }}%</p>
-    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            saveToHistory("{{ job_role_val|default('') }}", {{ probability }}, "{{ result_class }}");
+        animateGauge({{ probability }});
+        animateFactorBars();
+        renderRadarChart({{ stress_val }}, {{ hours_val }}, {{ satisfaction_val }}, {{ remote_val }});
+        renderTrendChart();
+        initShareButtons({{ probability }}, "{{ result }}");
+        setTimeout(function () {
+            document.getElementById('result-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 200);
+        });
+    </script>
     {% endif %}
 
+    <!-- Service Worker Registration -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register("{{ url_for('static', filename='sw.js') }}")
+                .then(function () { console.log('SW registered'); })
+                .catch(function () { console.log('SW registration failed'); });
+        }
+    </script>
 </body>
+
 </html>
