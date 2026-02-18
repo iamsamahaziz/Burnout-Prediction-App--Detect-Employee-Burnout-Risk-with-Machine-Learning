@@ -7,7 +7,7 @@
 
 **Burnout Prediction** is a comprehensive professional wellness application that uses **Machine Learning** to assess burnout risk and provides immediate mental health support tools. Built with a premium glassmorphic interface, it offers a holistic approach to managing workplace stress.
 
-![App Preview](https://via.placeholder.com/800x450?text=Burnout+Prediction+App+UI+Preview) *(Replace with your actual screenshot)*
+![App Preview](https://via.placeholder.com/800x450?text=Burnout+Prediction+App+UI+Preview)
 
 ## 🚀 Key Features
 
