@@ -7,8 +7,10 @@ import pandas as pd
 
 app = Flask(__name__)
 
-model = joblib.load("burnout_model5.pkl")
-scaler = joblib.load("scaler5.pkl")
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+model = joblib.load(os.path.join(BASE_DIR, "burnout_model5.pkl"))
+scaler = joblib.load(os.path.join(BASE_DIR, "scaler5.pkl"))
 
 model_columns = ['Age', 'Experience', 'WorkHoursPerWeek', 'RemoteRatio',
                  'SatisfactionLevel', 'StressLevel', 'Gender_Male',
@@ -220,6 +222,21 @@ def predict():
         action_plan = get_action_plan(probability, stress, work_hours, satisfaction, remote_ratio)
         industry_comparison = get_industry_comparison(job_role, probability, stress, work_hours)
 
+        # Save to server-side history
+        history_file = os.path.join(BASE_DIR, "history.json")
+        history = []
+        if os.path.exists(history_file):
+            with open(history_file, "r") as f:
+                history = json.load(f)
+        history.append({
+            "date": datetime.now().strftime("%Y-%m-%d %H:%M"),
+            "score": round(probability, 1),
+            "job_role": job_role
+        })
+        history = history[-50:]
+        with open(history_file, "w") as f:
+            json.dump(history, f)
+
         return render_template("index.html",
                                result=result,
                                probability=round(probability, 1),
@@ -246,7 +263,7 @@ def predict():
                                action_plan=[])
 
 
-MOOD_FILE = os.path.join(os.path.dirname(__file__), "mood_data.json")
+MOOD_FILE = os.path.join(BASE_DIR, "mood_data.json")
 
 
 @app.route("/api/mood", methods=["GET", "POST"])
@@ -273,6 +290,48 @@ def mood_api():
             with open(MOOD_FILE, "r") as f:
                 moods = json.load(f)
         return jsonify(moods)
+
+
+FEEDBACK_FILE = os.path.join(BASE_DIR, "feedback.json")
+
+
+@app.route("/api/feedback", methods=["POST"])
+def feedback_api():
+    data = request.get_json()
+    feedbacks = []
+    if os.path.exists(FEEDBACK_FILE):
+        with open(FEEDBACK_FILE, "r") as f:
+            feedbacks = json.load(f)
+    feedbacks.append({
+        "rating": data.get("rating", 0),
+        "comment": data.get("comment", ""),
+        "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    })
+    feedbacks = feedbacks[-200:]
+    with open(FEEDBACK_FILE, "w") as f:
+        json.dump(feedbacks, f)
+    return jsonify({"success": True})
+
+
+@app.route("/view-feedback")
+def view_feedback():
+    feedbacks = []
+    if os.path.exists(FEEDBACK_FILE):
+        with open(FEEDBACK_FILE, "r") as f:
+            feedbacks = json.load(f)
+    return render_template("feedback.html", feedbacks=feedbacks)
+
+
+HISTORY_FILE = os.path.join(BASE_DIR, "history.json")
+
+
+@app.route("/api/history", methods=["GET"])
+def history_api():
+    history = []
+    if os.path.exists(HISTORY_FILE):
+        with open(HISTORY_FILE, "r") as f:
+            history = json.load(f)
+    return jsonify(history[-10:])
 
 
 if __name__ == "__main__":

@@ -47,6 +47,23 @@ function animateGauge(targetValue) {
     var circumference = 2 * Math.PI * 85;
     var targetOffset = circumference - (circumference * targetValue / 100);
 
+    // Color-coded progress ring
+    gaugeFill.classList.remove('ring-green', 'ring-yellow', 'ring-orange', 'ring-red');
+    gaugeNumber.classList.remove('text-green', 'text-yellow', 'text-orange', 'text-red');
+    if (targetValue < 20) {
+        gaugeFill.classList.add('ring-green');
+        gaugeNumber.classList.add('text-green');
+    } else if (targetValue < 45) {
+        gaugeFill.classList.add('ring-yellow');
+        gaugeNumber.classList.add('text-yellow');
+    } else if (targetValue < 70) {
+        gaugeFill.classList.add('ring-orange');
+        gaugeNumber.classList.add('text-orange');
+    } else {
+        gaugeFill.classList.add('ring-red');
+        gaugeNumber.classList.add('text-red');
+    }
+
     requestAnimationFrame(function () {
         gaugeFill.style.strokeDashoffset = targetOffset;
     });
@@ -145,84 +162,109 @@ function renderRadarChart(stress, hours, satisfaction, remote) {
 }
 
 
-function renderTrendChart() {
-    var ctx = document.getElementById('trendChart');
-    if (!ctx) return;
+function loadServerHistory() {
+    var card = document.getElementById('server-history-card');
+    var ctx = document.getElementById('serverTrendChart');
+    var arrowEl = document.getElementById('trend-arrow');
+    if (!ctx || !card) return;
 
-    var history = JSON.parse(localStorage.getItem('burnout_history') || '[]');
-    var isDark = document.documentElement.getAttribute('data-theme') !== 'light';
+    fetch('/api/history')
+        .then(function (r) { return r.json(); })
+        .then(function (history) {
+            if (history.length < 2) {
+                card.style.display = 'none';
+                return;
+            }
+            card.style.display = 'block';
 
-    if (history.length === 0) {
-        ctx.parentNode.innerHTML = '<p style="text-align:center;color:' + (isDark ? '#64748b' : '#94a3b8') + ';padding:40px 0;">Complete more assessments to see your trend graph 📈</p>';
-        return;
-    }
+            var isDark = document.documentElement.getAttribute('data-theme') !== 'light';
+            var labels = history.map(function (item) { return item.date; });
+            var scores = history.map(function (item) { return item.score; });
 
-    var data = history.slice().reverse();
-    var labels = data.map(function (item) { return item.date; });
-    var scores = data.map(function (item) { return item.score; });
-
-    var gradient = ctx.getContext('2d').createLinearGradient(0, 0, 0, 250);
-    gradient.addColorStop(0, 'rgba(139, 92, 246, 0.3)');
-    gradient.addColorStop(1, 'rgba(139, 92, 246, 0.01)');
-
-    new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: labels,
-            datasets: [{
-                label: 'Burnout Score',
-                data: scores,
-                borderColor: '#8b5cf6',
-                backgroundColor: gradient,
-                borderWidth: 3,
-                fill: true,
-                tension: 0.4,
-                pointBackgroundColor: '#8b5cf6',
-                pointBorderColor: isDark ? '#111827' : '#ffffff',
-                pointBorderWidth: 2,
-                pointRadius: 5,
-                pointHoverRadius: 8
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    max: 100,
-                    grid: { color: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)' },
-                    ticks: {
-                        color: isDark ? '#64748b' : '#94a3b8',
-                        font: { family: 'Inter' },
-                        callback: function (val) { return val + '%'; }
-                    }
-                },
-                x: {
-                    grid: { display: false },
-                    ticks: {
-                        color: isDark ? '#64748b' : '#94a3b8',
-                        font: { family: 'Inter', size: 10 },
-                        maxRotation: 45
-                    }
-                }
-            },
-            plugins: {
-                legend: { display: false },
-                tooltip: {
-                    backgroundColor: isDark ? '#1e293b' : '#ffffff',
-                    titleColor: isDark ? '#f1f5f9' : '#1e293b',
-                    bodyColor: isDark ? '#94a3b8' : '#64748b',
-                    borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
-                    borderWidth: 1,
-                    displayColors: false,
-                    callbacks: {
-                        label: function (context) { return 'Score: ' + context.parsed.y.toFixed(1) + '%'; }
-                    }
+            // Trend arrow
+            var last = scores[scores.length - 1];
+            var prev = scores[scores.length - 2];
+            var diff = last - prev;
+            if (arrowEl) {
+                arrowEl.classList.remove('trend-improving', 'trend-worsening', 'trend-stable');
+                if (diff < -2) {
+                    arrowEl.textContent = '↑ Improving';
+                    arrowEl.classList.add('trend-improving');
+                } else if (diff > 2) {
+                    arrowEl.textContent = '↓ Worsening';
+                    arrowEl.classList.add('trend-worsening');
+                } else {
+                    arrowEl.textContent = '→ Stable';
+                    arrowEl.classList.add('trend-stable');
                 }
             }
-        }
-    });
+
+            var gradient = ctx.getContext('2d').createLinearGradient(0, 0, 0, 250);
+            gradient.addColorStop(0, 'rgba(139, 92, 246, 0.3)');
+            gradient.addColorStop(1, 'rgba(139, 92, 246, 0.01)');
+
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Burnout Score',
+                        data: scores,
+                        borderColor: '#8b5cf6',
+                        backgroundColor: gradient,
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4,
+                        pointBackgroundColor: '#8b5cf6',
+                        pointBorderColor: isDark ? '#111827' : '#ffffff',
+                        pointBorderWidth: 2,
+                        pointRadius: 5,
+                        pointHoverRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            grid: { color: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)' },
+                            ticks: {
+                                color: isDark ? '#64748b' : '#94a3b8',
+                                font: { family: 'Inter' },
+                                callback: function (val) { return val + '%'; }
+                            }
+                        },
+                        x: {
+                            grid: { display: false },
+                            ticks: {
+                                color: isDark ? '#64748b' : '#94a3b8',
+                                font: { family: 'Inter', size: 10 },
+                                maxRotation: 45
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: isDark ? '#1e293b' : '#ffffff',
+                            titleColor: isDark ? '#f1f5f9' : '#1e293b',
+                            bodyColor: isDark ? '#94a3b8' : '#64748b',
+                            borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
+                            borderWidth: 1,
+                            displayColors: false,
+                            callbacks: {
+                                label: function (context) { return 'Score: ' + context.parsed.y.toFixed(1) + '%'; }
+                            }
+                        }
+                    }
+                }
+            });
+        })
+        .catch(function () {
+            card.style.display = 'none';
+        });
 }
 
 
@@ -517,6 +559,16 @@ function updateCycleCounter() {
     if (el) el.textContent = 'Cycle ' + breathingCycles + ' / 4';
 }
 
+// Award "Mindful" badge when breathing exercise is completed
+var _origStopBreathing = stopBreathing;
+stopBreathing = function () {
+    if (breathingActive && breathingCycles >= 4) {
+        awardBadge('mindful');
+        renderBadges();
+    }
+    _origStopBreathing();
+};
+
 
 var selectedMood = null;
 
@@ -616,8 +668,170 @@ function loadMoodCalendar() {
             if (streakEl && streak > 0) {
                 streakEl.innerHTML = '🔥 <strong>' + streak + ' day' + (streak > 1 ? 's' : '') + '</strong> tracking streak!';
             }
+
+            // Award 7-Day Streak badge
+            if (streak >= 7) {
+                awardBadge('streak7');
+                renderBadges();
+            }
         })
         .catch(function () {
             calEl.innerHTML = '<p style="text-align:center;color:var(--text-muted);padding:16px;">Mood tracking available when running the server</p>';
         });
+}
+
+
+// ===== STAR RATING FEEDBACK =====
+var feedbackRating = 0;
+
+function initFeedbackStars() {
+    var stars = document.querySelectorAll('#star-rating .star');
+    stars.forEach(function (star) {
+        star.addEventListener('mouseenter', function () {
+            var val = parseInt(this.getAttribute('data-value'));
+            stars.forEach(function (s) {
+                var sv = parseInt(s.getAttribute('data-value'));
+                s.classList.toggle('star-hover', sv <= val);
+            });
+        });
+        star.addEventListener('mouseleave', function () {
+            stars.forEach(function (s) { s.classList.remove('star-hover'); });
+        });
+        star.addEventListener('click', function () {
+            feedbackRating = parseInt(this.getAttribute('data-value'));
+            stars.forEach(function (s) {
+                var sv = parseInt(s.getAttribute('data-value'));
+                s.classList.toggle('star-active', sv <= feedbackRating);
+            });
+            var btn = document.getElementById('btn-feedback-submit');
+            if (btn) btn.disabled = false;
+        });
+    });
+}
+
+function submitFeedback() {
+    if (feedbackRating === 0) return;
+    var comment = document.getElementById('feedback-text');
+    var payload = {
+        rating: feedbackRating,
+        comment: comment ? comment.value : ''
+    };
+
+    fetch('/api/feedback', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+    })
+        .then(function (r) { return r.json(); })
+        .then(function () {
+            var card = document.getElementById('feedback-card');
+            var thankyou = document.getElementById('feedback-thankyou');
+            // Hide form elements
+            var starRow = document.getElementById('star-rating');
+            var textarea = document.getElementById('feedback-text');
+            var btn = document.getElementById('btn-feedback-submit');
+            if (starRow) starRow.style.display = 'none';
+            if (textarea) textarea.style.display = 'none';
+            if (btn) btn.style.display = 'none';
+            if (thankyou) thankyou.style.display = 'flex';
+        });
+}
+
+
+// ===== CONFETTI CELEBRATION =====
+function triggerConfetti() {
+    var msg = document.getElementById('confetti-message');
+    if (msg) msg.style.display = 'block';
+
+    if (typeof confetti === 'function') {
+        confetti({
+            particleCount: 120,
+            spread: 80,
+            origin: { y: 0.6 },
+            colors: ['#10b981', '#8b5cf6', '#fbbf24', '#f59e0b', '#6366f1']
+        });
+        setTimeout(function () {
+            confetti({
+                particleCount: 60,
+                spread: 100,
+                origin: { y: 0.7, x: 0.3 }
+            });
+        }, 400);
+        setTimeout(function () {
+            confetti({
+                particleCount: 60,
+                spread: 100,
+                origin: { y: 0.7, x: 0.7 }
+            });
+        }, 700);
+    }
+}
+
+
+// ===== WELLNESS BADGES =====
+var BADGE_DEFS = [
+    { id: 'first_step', name: 'First Step', icon: '👣', desc: 'Completed first assessment' },
+    { id: 'low_risk', name: 'Low Risk Hero', icon: '🦸', desc: 'Score under 20%' },
+    { id: 'improving', name: 'Improving', icon: '📉', desc: 'Score dropped vs last' },
+    { id: 'streak7', name: '7-Day Streak', icon: '🔥', desc: 'Logged mood 7 days' },
+    { id: 'action_taker', name: 'Action Taker', icon: '📝', desc: 'Viewed action plan' },
+    { id: 'mindful', name: 'Mindful', icon: '🧘', desc: 'Completed breathing exercise' }
+];
+
+function getBadges() {
+    return JSON.parse(localStorage.getItem('burnout_badges') || '{}');
+}
+
+function awardBadge(id) {
+    var badges = getBadges();
+    if (!badges[id]) {
+        badges[id] = { unlocked: true, date: new Date().toISOString() };
+        localStorage.setItem('burnout_badges', JSON.stringify(badges));
+    }
+}
+
+function checkAndAwardBadges(score) {
+    // First Step badge
+    awardBadge('first_step');
+
+    // Low Risk Hero
+    if (score < 20) {
+        awardBadge('low_risk');
+    }
+
+    // Improving: compare with previous history
+    var history = JSON.parse(localStorage.getItem('burnout_history') || '[]');
+    if (history.length >= 2) {
+        var prev = history[1].score; // index 0 is current (just added)
+        if (score < prev) {
+            awardBadge('improving');
+        }
+    }
+
+    // Action Taker: check if action plan section exists and attach listener
+    var checkboxes = document.querySelectorAll('.plan-checkbox');
+    checkboxes.forEach(function (cb) {
+        cb.addEventListener('change', function () {
+            awardBadge('action_taker');
+            renderBadges();
+        });
+    });
+}
+
+function renderBadges() {
+    var container = document.getElementById('badges-row');
+    if (!container) return;
+    var badges = getBadges();
+    var html = '';
+    BADGE_DEFS.forEach(function (def) {
+        var unlocked = badges[def.id] && badges[def.id].unlocked;
+        html += '<div class="badge-item ' + (unlocked ? 'badge-unlocked' : 'badge-locked') + '" title="' + def.desc + '">';
+        html += '<span class="badge-icon">' + def.icon + '</span>';
+        html += '<span class="badge-name">' + def.name + '</span>';
+        if (!unlocked) {
+            html += '<span class="badge-lock">🔒</span>';
+        }
+        html += '</div>';
+    });
+    container.innerHTML = html;
 }

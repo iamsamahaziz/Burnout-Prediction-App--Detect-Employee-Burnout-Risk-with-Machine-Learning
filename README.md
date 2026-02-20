@@ -1,68 +1,51 @@
-# 🔥 Burnout Prediction - AI-Powered Professional Wellness Tool
+# 🔥 BurnoutGuard AI - Advanced Wellness Dashboard
 
 [![Python](https://img.shields.io/badge/Python-3.12-blue.svg)](https://www.python.org/)
 [![Flask](https://img.shields.io/badge/Flask-3.1.2-green.svg)](https://flask.palletsprojects.com/)
 [![Scikit-Learn](https://img.shields.io/badge/Scikit--Learn-1.8.0-orange.svg)](https://scikit-learn.org/)
 [![PWA](https://img.shields.io/badge/PWA-Ready-blueviolet.svg)](https://web.dev/progressive-web-apps/)
 
-**Burnout Prediction** is a comprehensive professional wellness application that uses **Machine Learning** to assess burnout risk and provides immediate mental health support tools. Built with a premium glassmorphic interface, it offers a holistic approach to managing workplace stress.
+**Burnout Prediction** is an advanced professional wellness dashboard that leverages **Machine Learning** to help users detect, track, and manage workplace stress. Designed with a premium glassmorphic UI, it combines scientific analysis with immediate mental health tools.
 
 ![App Preview](Preview.png)
 
-
 ## 🚀 Key Features
 
-### 🧠 AI-Powered Risk Assessment
-- **Machine Learning Engine**: Powered by a **Logistic Regression** model trained on professional work-life data.
-- **Factor Breakdown**: Visual analysis of how stress, work hours, and satisfaction contribute to your risk.
-- **Personalized Recommendations**: Dynamic advice tailored to your specific risk profile.
-- **30-Day Wellness Plan**: A 4-week progressive action plan with trackable tasks to reduce burnout.
+### 🧠 Pure Machine Learning Assessment
+- **Logistic Regression Engine**: 100% model-driven predictions powered by a `burnout_model5.pkl` trained on real professional data.
+- **Factor Breakdown**: Visualized impact analysis of Stress Level, Work Hours, Job Satisfaction, and Remote Work ratio.
+- **Dynamic Recommendations**: Personalized wellness tips generated based on your specific risk profile.
+- **30-Day Action Plan**: A tailored, 4-week wellness roadmap to improve mental health and productivity.
 
-### 🌟 Advanced Professional Tools
-- **📊 Industry Comparison**: Compare your scores against benchmarks from thousands of professionals in your specific role (Engineer, Manager, etc.).
-- **🌬️ Breathing Exercise**: Built-in **4-7-8 breathing technique** with a pulsing animated visual for immediate stress reduction.
-- **😊 Daily Mood Tracker**: Track your emotional well-being over time with a 30-day streak heatmap and personal notes.
-- **📄 Professional PDF Reports**: Generate and export a comprehensive A4 report of your assessment for personal records or consultation.
+### 🌟 Advanced Integrated Tools
+- **📊 Industry Comparison**: Benchmark your risk score against role-specific averages for Engineers, Managers, Analysts, HR, and Sales professionals.
+- **🫁 🌬️ Breathing Exercise**: Built-in guided **4-7-8 breathing module** with pulsing animations for immediate workplace stress relief.
+- **😊 Daily Mood Tracker**: Interactive 30-day mood heatmap with streak tracking and personal journaling.
+- **📄 Professional Reports**: Export a high-quality PDF report including your risk profile, factor analysis, and action plan.
 
 ### 🛠️ Technical Excellence
-- **Premium UI/UX**: Modern glassmorphic design with full Dark/Light mode support.
-- **Mobile First**: Fully responsive and installable as a **PWA** (Progressive Web App).
-- **History Tracking**: Local storage persistence to track your risk trends without needing an account.
+- **Tech Stack**: Python (Flask), Scikit-Learn (Logistic Regression), Pandas, Joblib.
+- **Frontend**: Vanilla JavaScript (ES6+), CSS3 (Glassmorphism), Chart.js (Radar & Trend charts).
+- **Architecture**: Lightweight, comment-free production code optimized for performance.
+- **Mobile First**: Fully responsive PWA (Progressive Web App) with offline caching support via Service Workers.
 
-## 💻 Tech Stack
+## 🔧 Setup & Installation
 
-- **Backend:** Python, Flask
-- **Machine Learning:** Scikit-Learn (Logistic Regression), Pandas, Joblib
-- **Frontend:** Vanilla JavaScript, CSS3 (Glassmorphism), HTML5
-- **Charts:** Chart.js (Radar & Trend analysis)
-- **Deployment:** Ready for Azure App Service & Google Cloud App Engine
-
-## 🔧 Installation & Setup
-
-1. **Clone the repository:**
+1. **Clone & Install:**
    ```bash
-   git clone https://github.com/your-username/burnout-prediction-app.git
+   git clone https://github.com/iamsamahaziz/burnout-prediction-app.git
    cd burnout-prediction-app
-   ```
-
-2. **Install dependencies:**
-   ```bash
    pip install -r requirements.txt
    ```
 
-3. **Run the app:**
+2. **Run Locally:**
    ```bash
    python app.py
    ```
-   Open `http://localhost:5000` in your browser.
+   Access the dashboard at `http://localhost:5000`.
 
-## ☁️ Deployment
-
-The app is deployment-ready with pre-configured:
-- `app.yaml` for **Google Cloud App Engine**
-- `requirements.txt` optimized for **Azure Web Apps**
+## ☁️ Deployment Ready
+Configured for professional hosting on **Microsoft Azure** and **Google Cloud App Engine**.
 
 ---
-
-### Built with ❤️ for Professional Well-being
-Created by **Samah AZIZ**
+Created by **Samah AZIZ** · Empowering professional well-being through Data Science.

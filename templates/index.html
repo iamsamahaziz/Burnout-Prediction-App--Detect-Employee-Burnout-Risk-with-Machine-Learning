@@ -9,13 +9,14 @@
     <meta property="og:title" content="Burnout Prediction - AI Risk Assessment">
     <meta property="og:description" content="Predict and prevent employee burnout with machine learning analysis.">
     <meta property="og:type" content="website">
-    <title>Burnout Prediction - AI Risk Assessment</title>
+    <title>BurnoutGuard AI - Intelligent Risk Assessment</title>
     <link rel="icon"
         href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔥</text></svg>">
     <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
     <meta name="theme-color" content="#0a0e1a">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
 </head>
 
 <body>
@@ -35,8 +36,8 @@
                     <span class="theme-icon" id="theme-icon">☀️</span>
                 </button>
             </div>
-            <h1>Burnout Prediction</h1>
-            <p class="subtitle">AI-Powered Employee Risk Assessment</p>
+            <h1>BurnoutGuard AI</h1>
+            <p class="subtitle">Intelligent Employee Wellness Dashboard</p>
         </header>
 
         <div class="glass-card">
@@ -146,6 +147,13 @@
         {% if result %}
         <div id="result-section">
 
+            <!-- Confetti celebration message -->
+            <div class="confetti-message glass-card" id="confetti-message" style="display:none;">
+                <span class="confetti-emoji">🎉</span>
+                <h3>You're doing great! Keep it up 🎉</h3>
+                <p>Your burnout risk is low — that's awesome!</p>
+            </div>
+
             <div class="glass-card result-card {{ result_class }}" id="result-card-main">
                 <div class="gauge-container">
                     <svg class="gauge-svg" viewBox="0 0 200 200">
@@ -205,10 +213,13 @@
                 </div>
             </div>
 
-            <div class="glass-card" style="margin-top: 20px;">
-                <h3 class="dashboard-title">📈 Burnout Score Trend</h3>
+            <div class="glass-card" id="server-history-card" style="margin-top: 20px; display:none;">
+                <div class="history-chart-header">
+                    <h3 class="dashboard-title">📈 Score History</h3>
+                    <span class="trend-arrow" id="trend-arrow"></span>
+                </div>
                 <div class="chart-wrapper chart-wide">
-                    <canvas id="trendChart"></canvas>
+                    <canvas id="serverTrendChart"></canvas>
                 </div>
             </div>
 
@@ -296,11 +307,37 @@
             </div>
             {% endif %}
 
+            <!-- Star Rating Feedback -->
+            <div class="glass-card feedback-card" id="feedback-card" style="margin-top: 20px;">
+                <h3 class="dashboard-title">⭐ Rate Your Experience</h3>
+                <div class="star-rating" id="star-rating">
+                    <span class="star" data-value="1">★</span>
+                    <span class="star" data-value="2">★</span>
+                    <span class="star" data-value="3">★</span>
+                    <span class="star" data-value="4">★</span>
+                    <span class="star" data-value="5">★</span>
+                </div>
+                <textarea class="feedback-textarea" id="feedback-text" placeholder="Tell us what you think..."
+                    maxlength="500"></textarea>
+                <button class="btn-action btn-feedback-submit" id="btn-feedback-submit" onclick="submitFeedback()"
+                    disabled>Submit Feedback</button>
+                <div class="feedback-thankyou" id="feedback-thankyou" style="display:none;">
+                    <span class="thankyou-icon">💜</span>
+                    <span>Thank you for your feedback!</span>
+                </div>
+            </div>
+
+            <!-- Wellness Badges -->
+            <div class="glass-card badges-card" style="margin-top: 20px;">
+                <h3 class="dashboard-title">🏆 Wellness Badges</h3>
+                <div class="badges-row" id="badges-row"></div>
+            </div>
+
         </div>
         {% endif %}
 
         <div class="glass-card breathing-section" style="margin-top: 24px;">
-            <h3 class="dashboard-title">🌬️ Breathing Exercise</h3>
+            <h3 class="dashboard-title">✨ Breathing Exercise</h3>
             <p class="breathing-subtitle">The 4-7-8 technique - proven to reduce stress and anxiety in minutes</p>
             <div class="breathing-container">
                 <div class="breathing-circle" id="breathing-circle">
@@ -359,12 +396,17 @@
     {% if result %}
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            saveToHistory("{{ job_role_val|default('') }}", {{ probability }}, "{{ result_class }}");
-        animateGauge({{ probability }});
+            var prob = {{ probability }};
+        saveToHistory("{{ job_role_val|default('') }}", prob, "{{ result_class }}");
+        animateGauge(prob);
         animateFactorBars();
         renderRadarChart({{ stress_val }}, {{ hours_val }}, {{ satisfaction_val }}, {{ remote_val }});
-        renderTrendChart();
-        initShareButtons({{ probability }}, "{{ result }}");
+        loadServerHistory();
+        initShareButtons(prob, "{{ result }}");
+        initFeedbackStars();
+        checkAndAwardBadges(prob);
+        renderBadges();
+        if (prob < 20) { triggerConfetti(); }
         setTimeout(function () {
             document.getElementById('result-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
         }, 200);
